@@ -3,6 +3,7 @@ import numpy as np
 from collections import deque
 import tensorflow as tf
 from tensorflow import keras
+from tensorflow.keras.layers import Conv1D,MaxPooling1D,Flatten
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
 
@@ -35,7 +36,7 @@ class DDQNAgent():
         self.optimizer = keras.optimizers.Adam(learning_rate=1e-3)
         self.loss_fn = keras.losses.mean_squared_error
 
-        self.model = self.create_model(input_shape=(matrix.shape[0],matrix.shape[1]))    ### [ 10, 5]
+        self.model = self.create_model(input_shape=[matrix.shape[0],matrix.shape[1]])    ### [ 10, 5]
         self.target_model = keras.models.clone_model(self.model)
         self.target_model.set_weights(self.model.get_weights())
 
@@ -45,7 +46,7 @@ class DDQNAgent():
 
         states, actions, rewards, next_states, dones = experiences  ## [5]   (10,5)
         next_Q_values = self.model.predict(next_states)  #next state 10*5
-        print(np.array(next_Q_values).shape)
+        #print(np.array(next_Q_values).shape)
 
         ## This is DQN
         max_next_Q_values = np.max(next_Q_values, axis=1)
@@ -55,11 +56,20 @@ class DDQNAgent():
         # best_next_actions = np.argmax(next_Q_values, axis=1)
         # next_mask = tf.one_hot(best_next_actions, self.n_outputs).numpy()
         # next_best_Q_values = (self.target_model.predict(next_states) * next_mask).sum(axis=1)
-        hamada = np.ndarray.tolist(rewards)
-        dones =  np.reshape(dones,len(dones))
-        print(rewards.shape)
-        target_Q_values = (hamada +
-                           (1 - dones) * self.discount_factor * max_next_Q_values)
+       # rewards=np.reshape(rewards,(len(rewards),1))
+
+
+        # print((self.discount_factor*max_next_Q_values).shape)
+        # print(np.multiply(np.reshape(np.subtract(1,dones),(32,1)) , (self.discount_factor*max_next_Q_values)).shape)
+        # test = np.dot(np.subtract(1,dones) , (self.discount_factor*max_next_Q_values))
+        #
+        #
+        #
+        # # test2=test* self.discount_factor
+        # print(rewards.shape,",,,,",test.shape)
+        # np.sum(rewards, test)
+        target_Q_values = (np.reshape(rewards,(self.batch_size,1)) +
+                           np.reshape((1-dones),(self.batch_size,1)) * self.discount_factor * max_next_Q_values)
 
         mask = tf.one_hot(actions, self.n_outputs)
         with tf.GradientTape() as tape:
@@ -84,8 +94,9 @@ class DDQNAgent():
         if np.random.rand() < epsilon:
             return np.random.randint(2)
         else:
-            Q_values = self.model.predict(state)
-            # print("Hola",Q_values)
+            print(state.shape)
+            Q_values = self.model.predict(state,verbose=0)
+            print("Hola",Q_values)
             return np.argmax(Q_values[0])
 
     #     get random experiences from the queue
@@ -101,12 +112,21 @@ class DDQNAgent():
     #     Create NN model and set one to model and one to target model
     def create_model(self,input_shape):
 
-        model = Sequential([
-            Dense(32,activation="elu",input_shape=input_shape),
-            Dense(32, activation="elu"),
-            Dense(self.n_outputs)
+        # model = Sequential([
+        #     Dense(32,activation="elu",input_shape=input_shape),
+        #     Dense(32, activation="elu"),
+        #     Dense(self.n_outputs)
+        #
+        # ])
+        model = Sequential()
+        model.add(Conv1D(filters=64, kernel_size=2, activation='relu', input_shape=input_shape))
+        model.add(MaxPooling1D(pool_size=2))
+        model.add(Flatten())
+        model.add(Dense(50, activation='relu'))
+        model.add(Dense(self.n_outputs))
+        model.compile(optimizer='adam', loss='mse')
 
-        ])
+
         # K = keras.backend
         # input_states = keras.layers.Input(shape=input_shape)
         # hidden1 = keras.layers.Dense(32, activation="elu")(input_states)
