@@ -36,7 +36,7 @@ for episode in range(600):
         obs, reward, done, info = agent.play_one_step(env, obs, epsilon)
         if done:
             break
-        if episode > 50:
+        if episode > 35:
             agent.training_step(batch_size)
     # if episode % 100 == 0 and episode != 0:
     #     string = "DDQN model at "+ str(episode)+".h5"
