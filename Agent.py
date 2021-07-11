@@ -25,7 +25,7 @@ matrix = np.array([
 ])
 next_matrix = np.zeros((10,5))
 
-class DDQNAgent():
+class DQNAgent():
 
     def __init__(self):
         self.replay_buffer = deque(maxlen=2000)

@@ -1,4 +1,4 @@
-from Agent import DDQNAgent
+from Agent import DQNAgent
 from Tutorials_Agent import DQNAgent
 import gym
 import tensorflow as tf
@@ -6,8 +6,7 @@ import tensorflow as tf
 print(tf.__version__)
 print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
 batch_size = 32
-agent = DDQNAgent()
-# agent = DQNAgent()
+agent = DQNAgent()
 
 matrix = [
     [1, 2, 3, 4, 5],
