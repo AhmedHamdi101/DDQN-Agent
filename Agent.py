@@ -36,6 +36,8 @@ class DDQNAgent():
         self.optimizer = keras.optimizers.Adam(learning_rate=1e-3)
         self.loss_fn = keras.losses.mean_squared_error
 
+        self.target_model_counter = 0
+
         self.model = self.create_model(input_shape=matrix.shape)    ### [ 10, 5],
         self.target_model = keras.models.clone_model(self.model)
         self.target_model.set_weights(self.model.get_weights())
